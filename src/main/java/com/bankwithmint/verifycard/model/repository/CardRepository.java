@@ -1,6 +1,9 @@
 package com.bankwithmint.verifycard.model.repository;
 
 import com.bankwithmint.verifycard.model.Card;
+import io.ebean.PagedList;
+
+import java.util.List;
 
 public interface CardRepository {
 
@@ -9,5 +12,7 @@ public interface CardRepository {
     Card findById(Long id);
 
     Card findByCardNumber(String cardNumber);
+
+    PagedList<Card> list(int start, int limit);
 
 }
