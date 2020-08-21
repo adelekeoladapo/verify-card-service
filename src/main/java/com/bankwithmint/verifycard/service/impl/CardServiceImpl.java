@@ -16,7 +16,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -57,9 +56,8 @@ public class CardServiceImpl implements CardService {
     public StatsResponse getStats(int limit, int start) {
         StatsResponse response = new StatsResponse(Message.ERROR, Message.GENERAL_ERROR_MESSAGE);
         try {
-            Pageable pageable = PageRequest.of(start, limit);
+            Pageable pageable = PageRequest.of(start - 1, limit);
             Page<Card> cardPagedList = this.cardRepository.findAll(pageable);
-//            PagedList<Card> cardPagedList = this.cardRepository.list(start, limit);
             response.setLimit(limit);
             response.setStart(start);
             response.setSize((int)cardPagedList.getTotalElements());
