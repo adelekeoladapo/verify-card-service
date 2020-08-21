@@ -20,4 +20,5 @@ public class Card {
     Bank bank;
     @ManyToOne
     Country country;
+    long hitCount;
 }

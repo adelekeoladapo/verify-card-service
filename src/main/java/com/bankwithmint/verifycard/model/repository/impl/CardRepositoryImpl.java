@@ -13,6 +13,12 @@ public class CardRepositoryImpl implements CardRepository {
     EbeanServer store;
 
     @Override
+    public Card save(Card card) {
+        this.store.save(card);
+        return card;
+    }
+
+    @Override
     public Card findById(Long id) {
         return this.store.find(Card.class).where().idEq(id).findOne();
     }

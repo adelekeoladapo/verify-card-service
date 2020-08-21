@@ -25,6 +25,9 @@ public class CardServiceImpl implements CardService {
             try {
                 response.setPayload(this.generateCardDtoFromCard(card));
                 response.setMessage(Message.GENERAL_SUCCESS_MESSAGE);
+                // Increment hit count
+                card.setHitCount(card.getHitCount() + 1);
+                this.cardRepository.save(card);
             } catch (Exception e) {
                 e.printStackTrace();
                 response.setMessage(String.format(Message.ERROR_MESSAGE, e));
