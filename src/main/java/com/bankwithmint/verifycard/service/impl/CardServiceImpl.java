@@ -40,10 +40,10 @@ public class CardServiceImpl implements CardService {
                 CardDto cardDto = this.generateCardDtoFromApiResponse(apiCardResponse);
                 response.setPayload(cardDto);
                 response.setMessage(Message.GENERAL_SUCCESS_MESSAGE);
-//                new Thread(() -> {
-//                    this.kafkaTemplate.send(TOPIC, cardDto);
+                new Thread(() -> {
+                    this.kafkaTemplate.send(TOPIC, cardDto);
                     this.incrementCardHitCount(cardNumber);
-//                }).start();
+                }).start();
             }
         } catch (Exception e) {
             e.printStackTrace();
