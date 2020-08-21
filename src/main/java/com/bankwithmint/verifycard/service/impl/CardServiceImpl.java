@@ -24,9 +24,10 @@ public class CardServiceImpl implements CardService {
         if (Objects.nonNull(card)) {
             try {
                 response.setPayload(this.generateCardDtoFromCard(card));
+                response.setMessage(Message.GENERAL_SUCCESS_MESSAGE);
             } catch (Exception e) {
                 e.printStackTrace();
-                response.setMessage(String.format(Message.GENERAL_ERROR_MESSAGE, e));
+                response.setMessage(String.format(Message.ERROR_MESSAGE, e));
             }
         } else {
             response.setMessage(String.format(Message.NOT_FOUND_MESSAGE, "Card"));
