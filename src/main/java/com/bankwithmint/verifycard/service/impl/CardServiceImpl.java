@@ -11,6 +11,7 @@ import com.bankwithmint.verifycard.utils.Message;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ebean.PagedList;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -25,7 +26,9 @@ public class CardServiceImpl implements CardService {
     CardRepository cardRepository;
     @Autowired
     RestTemplate restTemplate;
-    private ObjectMapper objectMapper;
+    @Autowired
+    KafkaTemplate<String, String> kafkaTemplate;
+    private static final String TOPIC = "com.ng.vela.even.card_verified";
 
     @Override
     public ServiceResponse verifyCard(String cardNumber) {
@@ -37,6 +40,7 @@ public class CardServiceImpl implements CardService {
                 response.setPayload(this.generateCardDtoFromApiResponse(apiCardResponse));
                 response.setMessage(Message.GENERAL_SUCCESS_MESSAGE);
                 new Thread(() -> {
+                    this.kafkaTemplate.send(TOPIC, "I just found this card " + cardNumber);
                     this.incrementCardHitCount(cardNumber);
                 }).start();
             }
