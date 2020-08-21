@@ -12,13 +12,5 @@ public class Card {
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
     String cardNumber;
-    @Enumerated(EnumType.STRING)
-    CardType type;
-    @ManyToOne
-    Scheme scheme;
-    @ManyToOne
-    Bank bank;
-    @ManyToOne
-    Country country;
     long hitCount;
 }

@@ -5,6 +5,7 @@ import io.ebean.EbeanServer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication
 public class VerifyCardApplication {
@@ -16,6 +17,11 @@ public class VerifyCardApplication {
 	@Bean
 	public EbeanServer store() {
 		return Ebean.getDefaultServer();
+	}
+
+	@Bean
+	public RestTemplate getRestTemplate() {
+		return new RestTemplate();
 	}
 
 }

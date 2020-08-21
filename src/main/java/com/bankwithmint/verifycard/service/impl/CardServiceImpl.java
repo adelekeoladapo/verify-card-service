@@ -1,5 +1,6 @@
 package com.bankwithmint.verifycard.service.impl;
 
+import com.bankwithmint.verifycard.dto.ApiCardResponse;
 import com.bankwithmint.verifycard.dto.CardDto;
 import com.bankwithmint.verifycard.dto.ServiceResponse;
 import com.bankwithmint.verifycard.dto.StatsResponse;
@@ -7,13 +8,14 @@ import com.bankwithmint.verifycard.model.Card;
 import com.bankwithmint.verifycard.model.repository.CardRepository;
 import com.bankwithmint.verifycard.service.CardService;
 import com.bankwithmint.verifycard.utils.Message;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.ebean.PagedList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,24 +23,26 @@ public class CardServiceImpl implements CardService {
 
     @Autowired
     CardRepository cardRepository;
+    @Autowired
+    RestTemplate restTemplate;
+    private ObjectMapper objectMapper;
 
     @Override
     public ServiceResponse verifyCard(String cardNumber) {
         ServiceResponse response = new ServiceResponse(Message.ERROR, Message.GENERAL_ERROR_MESSAGE);
-        Card card = this.cardRepository.findByCardNumber(cardNumber);
-        if (Objects.nonNull(card)) {
-            try {
-                response.setPayload(this.generateCardDtoFromCard(card));
+        ApiCardResponse apiCardResponse = null;
+        try {
+            apiCardResponse = this.restTemplate.getForObject("https://lookup.binlist.net/" + cardNumber, ApiCardResponse.class);
+            if (apiCardResponse != null) {
+                response.setPayload(this.generateCardDtoFromApiResponse(apiCardResponse));
                 response.setMessage(Message.GENERAL_SUCCESS_MESSAGE);
-                // Increment hit count
-                card.setHitCount(card.getHitCount() + 1);
-                this.cardRepository.save(card);
-            } catch (Exception e) {
-                e.printStackTrace();
-                response.setMessage(String.format(Message.ERROR_MESSAGE, e));
+                new Thread(() -> {
+                    this.incrementCardHitCount(cardNumber);
+                }).start();
             }
-        } else {
-            response.setMessage(String.format(Message.NOT_FOUND_MESSAGE, "Card"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setMessage(String.format(Message.ERROR_MESSAGE, e.getMessage()));
         }
         return response;
     }
@@ -59,11 +63,19 @@ public class CardServiceImpl implements CardService {
         return response;
     }
 
-    private CardDto generateCardDtoFromCard(Card card) throws Exception {
+    private CardDto generateCardDtoFromApiResponse(ApiCardResponse card) throws Exception {
         CardDto dto = new CardDto();
-        dto.setScheme(card.getScheme().getName());
+        dto.setScheme(card.getScheme());
         dto.setBank(card.getBank().getName());
-        dto.setType(card.getType().toString());
+        dto.setType(card.getType());
         return dto;
     }
+
+    private void incrementCardHitCount(String cardNumber) {
+        Card card = Optional.ofNullable(this.cardRepository.findByCardNumber(cardNumber)).orElse(new Card());
+        card.setCardNumber(cardNumber);
+        card.setHitCount(card.getHitCount() + 1);
+        this.cardRepository.save(card);
+    }
+
 }
