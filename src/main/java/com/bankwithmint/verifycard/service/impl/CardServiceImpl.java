@@ -9,6 +9,9 @@ import com.bankwithmint.verifycard.model.repository.CardRepository;
 import com.bankwithmint.verifycard.service.CardService;
 import com.bankwithmint.verifycard.utils.Message;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -38,10 +41,10 @@ public class CardServiceImpl implements CardService {
                 CardDto cardDto = this.generateCardDtoFromApiResponse(apiCardResponse);
                 response.setPayload(cardDto);
                 response.setMessage(Message.GENERAL_SUCCESS_MESSAGE);
-                new Thread(() -> {
-                    this.kafkaTemplate.send(TOPIC, cardDto);
+//                new Thread(() -> {
+//                    this.kafkaTemplate.send(TOPIC, cardDto);
                     this.incrementCardHitCount(cardNumber);
-                }).start();
+//                }).start();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -54,12 +57,14 @@ public class CardServiceImpl implements CardService {
     public StatsResponse getStats(int limit, int start) {
         StatsResponse response = new StatsResponse(Message.ERROR, Message.GENERAL_ERROR_MESSAGE);
         try {
+            Pageable pageable = PageRequest.of(start, limit);
+            Page<Card> cardPagedList = this.cardRepository.findAll(pageable);
 //            PagedList<Card> cardPagedList = this.cardRepository.list(start, limit);
-//            response.setLimit(limit);
-//            response.setStart(start);
-//            response.setSize(cardPagedList.getTotalCount());
-//            response.setPayload(cardPagedList.getList().stream().collect(Collectors.toMap(Card::getCardNumber, Card::getHitCount)));
-//            response.setSuccess(Message.SUCCESS).setMessage(Message.GENERAL_SUCCESS_MESSAGE);
+            response.setLimit(limit);
+            response.setStart(start);
+            response.setSize((int)cardPagedList.getTotalElements());
+            response.setPayload(cardPagedList.getContent().stream().collect(Collectors.toMap(Card::getCardNumber, Card::getHitCount)));
+            response.setSuccess(Message.SUCCESS).setMessage(Message.GENERAL_SUCCESS_MESSAGE);
         } catch (Exception e) {
             response.setMessage(String.format(Message.ERROR_MESSAGE, e.getMessage()));
         }
