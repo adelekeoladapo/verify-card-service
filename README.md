@@ -20,5 +20,5 @@ The service starts and runs on port 8090
 
 The documentation of the API can be found here <i>http://localhost:8090/swagger-ui.html</> while running it on your local PC.
 
-A sample of the API service has also been deployed here: <a href="minttestapi.dapoadeleke.me">minttestapi.dapoadeleke.me</a>.
+A sample of the API service has also been deployed here: <a href="minttestapi.dapoadeleke.me">minttestapi.dapoadeleke.me</a>. <br>
 Click <a href="minttestapi.dapoadeleke.me/swagger-ui.html">minttestapi.dapoadeleke.me/swagger-ui.html</a> for the documentation
